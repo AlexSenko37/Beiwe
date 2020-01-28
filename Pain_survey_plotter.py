@@ -1,13 +1,21 @@
 # -*- coding: utf-8 -*-
 """
 This script combines .csv files for patient responses to the Beiwe pain survey
+It saves one .csv file per patient, where each row contains a score and the name
+of the file that the score came from.
+It also plots the data.
 """
 
-import glob
+import glob, csv, os
 import matplotlib.pyplot as plt
 
 # path to list of folders containing patient data, where each folder is a patient id
-folder_path = "/Users/alex/Desktop/DP Pituitary Data (Asad)/"
+folder_path = "DIRECTORY CONTAINING DIRECTORIES OF PATIENTS"
+
+# create directory to store processed files and plots
+write_path = os.path.join(os.path.dirname(os.path.dirname(folder_path)),'Analysis/')
+if os.path.isdir(write_path) == False:
+    os.mkdir(write_path)
 
 # get list of folder names (patient ids)
 def get_ids(folder_path):
@@ -19,8 +27,9 @@ def get_ids(folder_path):
 def get_pain_scores(patient_id):
     # open file and read into memory
     path = folder_path + patient_id + "/" + patient_id + "/survey_answers/56d60b801206f7036f8919ee/*.csv"  
-    pain_scores = []  
-    # for all files in this folder containing survery responses
+    pain_scores = []
+    file_names = []
+    # for all files in this folder containing survey responses
     for filename in glob.glob(path):
         with open(filename, 'r') as f:
             # read the short file into one string
@@ -36,6 +45,13 @@ def get_pain_scores(patient_id):
                 else:
                     pain_lvl = int(score_char)
                     pain_scores.append(pain_lvl)
+        # convert 'filename' (a path) to just the name of the .csv file
+        file_names.append(filename[-23:-4])
+        #write .csv file with all pain scores
+        with open(write_path + patient_id + '_pain_scores.csv','w') as csvfile:
+            csvwriter = csv.writer(csvfile)
+            csvwriter.writerow(['filename','pain_score'])
+            csvwriter.writerows(zip(file_names,pain_scores))
     return pain_scores
 
 # plot the collected pain scores        
@@ -46,7 +62,7 @@ def plot_pain(pain_scores,patient_id):
     ax.grid()
     ax.set_ylim([0,10])
     # save fig to working directory   
-    fig.savefig("Pain_" + patient_id + ".png")
+    fig.savefig(write_path + "Pain_" + patient_id + ".png")
     # show fig in console
     plt.show()
 
@@ -54,4 +70,5 @@ def plot_pain(pain_scores,patient_id):
 patient_ids = get_ids(folder_path)
 for id in patient_ids:
     ps = get_pain_scores(id)
-    plot_pain(ps,id)
+    if ps:
+        plot_pain(ps,id)
