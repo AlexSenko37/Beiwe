@@ -1,71 +1,57 @@
 # -*- coding: utf-8 -*-
 """
-This script combines .csv files for patient responses to the pain survey
+This script combines .csv files for patient responses to the Beiwe pain survey
 """
-import numpy as np
+
 import glob
-import csv
-from math import sqrt as sqrt
 import matplotlib.pyplot as plt
 
-# open file and read into memory
-patient_id = 'bvg4zvna'
-path = "/Users/alex/Desktop/DP Pituitary Data (Asad)/" + patient_id + "/" + patient_id + "/survey_answers/56d60b801206f7036f8919ee/*.csv"
+# path to list of folders containing patient data, where each folder is a patient id
+folder_path = "/Users/alex/Desktop/DP Pituitary Data (Asad)/"
 
-pain_scores = []
-#files = glob.glob(path)
-for filename in glob.glob(path):
-    with open(filename, 'r') as f:
-        text = f.read()
-        ind = text.find('= 10,')
-        score_char = text[ind+5]
-        if score_char != 'N':
-            pain_lvl = int(text[ind+5])
-            pain_scores.append(pain_lvl)
-            
-            
-        
-            
+# get list of folder names (patient ids)
+def get_ids(folder_path):
+    # just take the last part of the path to get the patient ids
+    # some patients only have a 7 digit id. In that case, strip the preceeding '/'
+    return [foldername[-8:].strip('/') for foldername in glob.glob(folder_path + '*')]
 
-#with open(files[0],'r') as f:
-    
-## initializing the titles and rows list 
-#fields = [] 
-#rows = [] 
-#  
-## reading csv file 
-#with open(files[5],'r') as csvfile: 
-#    # creating a csv reader object 
-#    csvreader = csv.reader(csvfile) 
-#      
-#    # extracting field names through first row 
-#    fields = next(csvreader) 
-#  
-#    # extracting each data row one by one 
-#    for row in csvreader: 
-#        rows.append(row)
+# generate a list of pain scores, one score per .csv file    
+def get_pain_scores(patient_id):
+    # open file and read into memory
+    path = folder_path + patient_id + "/" + patient_id + "/survey_answers/56d60b801206f7036f8919ee/*.csv"  
+    pain_scores = []  
+    # for all files in this folder containing survery responses
+    for filename in glob.glob(path):
+        with open(filename, 'r') as f:
+            # read the short file into one string
+            text = f.read()
+            # find the text before the patient's score is recorded
+            ind = text.find('= 10,')
+            # the patient's score is the one or two chars after that string
+            score_char = text[ind+5]
+            if score_char != 'N':
+                if text[ind+6] == '0':
+                    pain_lvl = 10
+                    pain_scores.append(pain_lvl)
+                else:
+                    pain_lvl = int(score_char)
+                    pain_scores.append(pain_lvl)
+    return pain_scores
 
-## extract timestamp, x, y, z to matrix
-#accel = []        
-#for row in rows:
-#    ap = [row[0], row[3], row[4], row[5]]
-#    ap = [float(i) for i in ap]
-#    # add magnitude calculation
-#    ap.append(sqrt(ap[1] ** 2 + ap[2] ** 2 + ap[3] ** 2))
-#    accel.append(ap)
-#    
-#accel_np = np.array(accel)
-#
-# plot data
-#t = accel_np[:,0]
-#a = accel_np[:,4]
-fig, ax = plt.subplots()
-ax.plot(pain_scores)
+# plot the collected pain scores        
+def plot_pain(pain_scores,patient_id):        
+    fig, ax = plt.subplots()
+    ax.plot(pain_scores)
+    ax.set(xlabel='Day', ylabel='Pain level',title='Daily pain level')
+    ax.grid()
+    ax.set_ylim([0,10])
+    # save fig to working directory   
+    fig.savefig("Pain_" + patient_id + ".png")
+    # show fig in console
+    plt.show()
 
-ax.set(xlabel='Day', ylabel='Pain level',
-       title='Daily pain level')
-ax.grid()
-
-fig.savefig("Pain_" + patient_id + ".png")
-plt.show()
-
+# execute functions here to collect and plot pain data
+patient_ids = get_ids(folder_path)
+for id in patient_ids:
+    ps = get_pain_scores(id)
+    plot_pain(ps,id)
