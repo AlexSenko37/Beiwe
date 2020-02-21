@@ -12,7 +12,7 @@ import glob, csv, os, shutil
 from datetime import datetime
 
 # path to list of folders containing patient data, where each folder is a patient id
-folder_path = "/Users/alex/Documents/CNOC/DP Pituitary Data (Asad)/"
+folder_path = "DIRECTORY"
 
 # create directory to store processed files and plots
 write_path = os.path.join(os.path.dirname(os.path.dirname(folder_path)),'aggregated beiwe data/')
