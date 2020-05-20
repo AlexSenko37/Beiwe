@@ -1,0 +1,33 @@
+--Query to join pain and hourly_fft tables. Last is the one used.
+
+-- Get a list of all pain score recording times and levels
+-- For a given pain score time, find the relevant hourly_fft data
+-- Compute the relevant stats for that time
+-- Can first join both tables based on how they should be grouped
+-- Save as table
+CREATE TABLE labeled_features AS
+Select
+h.patientid, utc_time
+,avg(energy) as energy_avg
+,stddev_samp(energy) as energy_dev
+,avg(power1) as power1_avg
+,stddev_samp(power1) as power1_dev
+,avg(power2) as power2_avg
+,stddev_samp(power2) as power2_dev
+,avg(power3) as power3_avg
+,stddev_samp(power3) as power3_dev
+,avg(power4) as power4_avg
+,stddev_samp(power4) as power4_dev
+,avg(power5) as power5_avg
+,stddev_samp(power5) as power5_dev
+,pain_score
+From hourly_fft h
+Inner Join pain p ON h.patientid = p.patientid
+	and p.utc_time - interval '24 hours' <= h.utc_time_hr
+	and p.utc_time >= h.utc_time_hr
+Group by utc_time, h.patientid, pain_score
+Order by utc_time;
+
+-- Copy table to csv
+\copy (SELECT * FROM labeled_features) to ‘~/labeled_features.csv' csv header
+
