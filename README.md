@@ -1,7 +1,7 @@
 # Beiwe Pain Prediction from Accelerometer Data
 This notebook describes how to transform smartphone accelerometer data from the Beiwe app into features that can be used for supervised machine learning when paired with patients' daily pain surveys.
 The steps:
-- Load acceleromet and pain data from .csv files into a PostgreSQL database
+- Load accelerometer and pain data from .csv files into a PostgreSQL database
 - Transform data into features
 - Perform supervised learning
 
