@@ -61,7 +61,7 @@ class BeiweTable:
         f = None
 
         # add .csv files in directory to table
-        for file in glob.glob(self.path)[0:2]:
+        for file in glob.glob(self.path):
 
             with psycopg2.connect(database = self.db, user = self.user, 
                                   password = self.password) as con:
